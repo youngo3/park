@@ -4,32 +4,36 @@ ScrollTrigger.defaults({
   toggleActions: "restart pause reverse pause",
 });
 
-let tl = gsap.timeline(".intro", {
+let tl = gsap.timeline({
   scrollTrigger: {
     trigger: ".intro",
-    scrub: true,
-    pin: true,
-    pinSpacing: false,
-    start: "top 100px",
     end: "+=100%",
-    markers: {
-      startColor: "white",
-      endColor: "red",
-      fontSize: "16px",
-      fontWeight: "bold",
-    },
+    pin: true,
+    scrub: 1,
+    mark: true,
   },
 });
-tl.to(".muhly", {
-  //   y: "-=50vh",
-  //   transformOrigin: "right bottom",
+tl.to(".intro", {
+  filter: `grayScale(0)`,
+  // onComplete: () => console.log(window.innerHeight),
 });
-tl.from(".cloud", {});
+tl.to(".muhly", {
+  y: "+=700",
+});
+tl.to(".cloud", {
+  x: "+=700",
+});
 
-// ScrollTrigger.create({
-//     trigger: '.chart',
-//     start: 'center center',
-//     end: 'bottom top',
-//     toggleClass: '.visible', //this toggles the specified CSS class on the trigger element
-//     onEnter: drawPoints //this fires the drawPoints function when the trigger enters the scroller from above
-//   })
+gsap.to(".park-model img", {
+  scrollTrigger: {
+    trigger: ".park-model",
+    start: "top",
+    pin: true,
+    scrub: 1,
+    markers: {
+      startColor: "white",
+      endColor: "green",
+    },
+  },
+  rotate: 30,
+});
