@@ -1,95 +1,84 @@
 import * as THREE from "https://unpkg.com/three@0.118.3/build/three.module.js";
-// import { FBXLoader } from "https://unpkg.com/three@0.118.3/examples/jsm/loaders/FBXLoader.js";
-import { OBJLoader } from "https://unpkg.com/three@0.118.3/examples/jsm/loaders/OBJLoader.js";
-import { MTLLoader } from "https://unpkg.com/three@0.118.3/examples/jsm/loaders/MTLLoader.js";
-export default function parkRender() {
-  class Scene {
-    constructor(model) {
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
-      this.renderer = new THREE.WebGLRenderer({
-        antialias: true,
-      });
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.setClearColor(new THREE.Color(0xfefefe));
-      //
-      this.renderer.shadowMap.enabled = true;
-      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      this.renderer.setPixelRatio(window.devicePixelRatio);
-      //
-      document
-        .querySelector(".park-model")
-        .appendChild(this.renderer.domElement);
-      //scene
-      this.scene = new THREE.Scene();
-      this.scene.add(model);
-      //camera
-      this.camera = new THREE.PerspectiveCamera(
-        100,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
-      this.camera.position.set(0, 10, 10);
-      this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-      //helper
-      this.gridHelper = new THREE.GridHelper(4, 4);
-      this.scene.add(this.gridHelper);
-      this.cameraHelper = new THREE.CameraHelper(this.camera);
-      this.scene.add(this.cameraHelper);
-      this.axesHelper = new THREE.AxesHelper(5);
-      this.scene.add(this.axesHelper); //The X axis is red. The Y axis is green. The Z axis is blue.
-      //light
-      this.spotLight = new THREE.SpotLight(0xffffff);
-      this.spotLight.position.set(10, 10, 10);
-      this.scene.add(this.spotLight);
-    }
-    render = () => {
-      // this.renderer.setViewport(0, 0, this.width, this.height);
-      // .setViewport ( x : Integer, y : Integer, width : Integer, height : Integer ) : null
-      // this.camera.aspect = this.width / this.height;
-      this.renderer.render(this.scene, this.camera);
-    };
-  }
-  function loadModel() {
-    gsap.registerPlugin(ScrollTrigger);
-    const mtlLoader = new MTLLoader();
-    // mtlLoader.setPath("./");
-    mtlLoader.load("modeling.mtl", function (materials) {
-      materials.preload();
-      const objLoader = new OBJLoader();
-      objLoader.load(
-        "modeling.obj",
-        function (object) {
-          object.scale.set(1, 1, 1);
-          // object.position.set(-60, 0, 30);
-          // object.rotation.set(0, 0, 0);
-          setUpAnimation(object);
-        }
-        // onProgress,
-        // onError
-      );
-    });
-  }
+import { GLTFLoader } from "https://unpkg.com/three@0.118.3/examples/jsm/loaders/GLTFLoader.js";
 
+export default function parkRender() {
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(
+    100,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  );
+  camera.position.set(0, 50, 0);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  const axesHelper = new THREE.AxesHelper(100);
+  scene.add(axesHelper); //The X axis is red. The Y axis is green. The Z axis is blue.
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+  });
+  renderer.setClearColor(new THREE.Color(0xfefefe));
+  renderer.setSize(window.innerWidth * 0.8, window.innerHeight);
+  const canvas = renderer.domElement;
+  document.querySelector(".park-model").appendChild(canvas);
+  const light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+  scene.add(light);
+  const loader = new GLTFLoader();
+  loader.load(
+    "src/assets/modeling.glb",
+    function (gltf) {
+      scene.add(gltf.scene);
+      setUpAnimation(gltf.scene);
+    },
+    function (xhr) {
+      console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+    },
+    function (error) {
+      console.error(error);
+    }
+  );
+  render();
+  function render() {
+    if (resize(renderer)) {
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+    }
+    renderer.render(scene, camera);
+    requestAnimationFrame(render);
+  }
+  function resize(renderer) {
+    const canvas = renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
+    return needResize;
+  }
   function setUpAnimation(model) {
-    let scene = new Scene(model);
-    scene.render();
+    let sectionDuration = 0.25;
+    let delay = 0;
     let tl = new gsap.timeline({
-      onUpdate: scene.render,
       scrollTrigger: {
         trigger: ".park-model",
-        start: "top 100vh",
-        end: "bottom top",
+        start: "top top",
+        end: "+=100%",
         pin: true,
-        scrub: 0.1,
+        scrub: 1,
         markers: {
           startColor: "black",
           endColor: "green",
+          fontSize: "30px",
         },
+        defaults: { duration: sectionDuration },
       },
     });
-    tl.to(model.rotation, { x: 1, y: 1, z: -1 }, "+=1");
+
+    //x left and right, y up and down, z lower, closed to hill
+    tl.to(camera.position, { x: 0, y: 30, z: 30 });
+    tl.to(model.rotation, { x: -0.5, y: -1, z: 0 });
+    // tl.to(camera.position, { x: 0, y: 10, z: 50 });
+    // camera.position.set(0, 10, 47);
+    //model.position.z = -10;
   }
-  loadModel();
 }
