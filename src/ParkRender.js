@@ -11,8 +11,6 @@ export default function parkRender() {
   );
   camera.position.set(0, 50, 0);
   camera.lookAt(new THREE.Vector3(0, 0, 0));
-  const axesHelper = new THREE.AxesHelper(100);
-  scene.add(axesHelper); //The X axis is red. The Y axis is green. The Z axis is blue.
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
   });
@@ -56,29 +54,32 @@ export default function parkRender() {
     return needResize;
   }
   function setUpAnimation(model) {
-    let sectionDuration = 0.25;
-    let delay = 0;
     let tl = new gsap.timeline({
       scrollTrigger: {
         trigger: ".park-model",
-        start: "top top",
-        end: "+=100%",
+        end: "+=7000",
         pin: true,
         scrub: 1,
-        markers: {
-          startColor: "black",
-          endColor: "green",
-          fontSize: "30px",
-        },
-        defaults: { duration: sectionDuration },
       },
     });
 
     //x left and right, y up and down, z lower, closed to hill
-    tl.to(camera.position, { x: 0, y: 30, z: 30 });
-    tl.to(model.rotation, { x: -0.5, y: -1, z: 0 });
-    // tl.to(camera.position, { x: 0, y: 10, z: 50 });
-    // camera.position.set(0, 10, 47);
-    //model.position.z = -10;
+    tl.to(camera.position, { x: 0, y: 30, z: 30 })
+      .to(model.rotation, { x: -0.5, y: 0, z: 0 })
+      .to("canvas", { scale: 0.7, left: "70%" })
+      .from(".tree-zone", { x: -innerWidth * 1 })
+      .to(camera.position, { x: 0, y: 30, z: 20 })
+      .to(".tree-zone", { x: -innerWidth * 1 })
+      .from(".pond-of-love", { x: -innerWidth * 1 })
+      .to(camera.position, { x: 2, y: 20, z: 0 })
+      .to(".pond-of-love", { x: -innerWidth * 1 })
+      .from(".muhly-zone", { x: -innerWidth * 1 })
+      .to(camera.position, { x: 2, y: 5, z: -25 })
+      .to(".muhly-zone", { x: -innerWidth * 1 })
+      .from(".tree-on-the-hill", { x: -innerWidth * 1 })
+      .to(camera.position, { x: 2, y: 10, z: -25 })
+      .to("canvas", { scale: 1 });
+
+    // model.position.z = -10;
   }
 }
